@@ -1,189 +1,193 @@
-# Client Sales Forecast
+# Hybrid Sales Forecasting Notebook
 
-A hybrid monthly sales forecasting notebook that combines:
+This repository contains a Jupyter notebook that demonstrates a **hybrid approach to sales forecasting** using Python.
 
-1. **Multivariate regression** for external business drivers  
-2. **ARIMA on regression residuals** to capture time-based structure not explained by the drivers  
-3. **95% forecast confidence intervals**  
-4. **Explainability outputs** for understanding driver impact on forecasts  
+The notebook combines:
 
-This project is designed as an interpretable forecasting workflow for monthly sales data.
+- **Regression modeling** to capture the impact of business drivers (marketing spend, price, macro indicators, etc.)
+- **ARIMA time-series modeling** to capture residual temporal structure
+- **Explainability techniques** to understand how each feature contributes to forecasts
 
-## Notebook Overview
+The result is an interpretable forecasting workflow suitable for business analytics, demand planning, and financial forecasting.
 
-The notebook implements a hybrid forecasting pipeline using:
+---
 
-- **OLS regression** from `statsmodels` to model sales as a function of external variables
-- **ARIMA** from `statsmodels` to model autocorrelation in the regression residuals
-- **Permutation importance** from `scikit-learn` to provide model-agnostic feature importance
-- **Driver contribution decomposition** to show how each feature contributes to each forecasted period
+# Notebook
 
-## Expected Input File
+`hybrid_sales_forecasting_notebook_executed.ipynb`
 
-The notebook expects a CSV file named:
+The notebook walks through the entire forecasting pipeline including:
 
-```text
-synthetic_monthly_sales.csv
+1. Data loading
+2. Feature engineering
+3. Regression modeling
+4. Residual time-series modeling
+5. Hybrid forecast generation
+6. Model explainability
+7. Future forecasting
+
+---
+
+# Forecasting Methodology
+
+The notebook implements a **two-stage hybrid model**.
+
+## 1. Multivariate Regression
+
+Sales are modeled using external business drivers such as:
+
+- marketing spend
+- product price
+- economic indicators
+- holidays
+- competitor activity
+- trend and seasonality features
+
+This produces an interpretable model showing how each variable impacts sales.
+
+## 2. Residual Time-Series Modeling
+
+After regression predictions are produced:
+
+```
+residual = actual_sales - regression_prediction
 ```
 
-Expected columns:
+An **ARIMA model** is then trained on the residuals to capture time-based patterns not explained by the regression.
 
-```text
-date
-sales
-marketing_spend
-avg_price
-economic_index
-holiday_flag
-competitor_promo_index
-```
+## 3. Hybrid Forecast
 
-## Forecasting Approach
-
-### Step 1: Feature engineering
-The notebook adds deterministic time-based features:
-
-- `t` for trend
-- `month_num` for calendar month
-- `month_sin` and `month_cos` for cyclical seasonality encoding
-
-### Step 2: Regression model
-An **OLS regression** is fit using:
-
-- `marketing_spend`
-- `avg_price`
-- `economic_index`
-- `holiday_flag`
-- `competitor_promo_index`
-- `t`
-- `month_sin`
-- `month_cos`
-
-This provides an interpretable estimate of how external drivers influence sales.
-
-### Step 3: Residual modeling with ARIMA
-After regression predictions are generated, the notebook computes residuals:
-
-```text
-residual = actual sales - regression prediction
-```
-
-An **ARIMA(1, 0, 1)** model is then fit on the training residuals to capture remaining temporal structure.
-
-### Step 4: Hybrid forecast
 Final forecast:
 
-```text
-hybrid_forecast = regression_pred + residual_forecast
+```
+final_forecast = regression_prediction + residual_forecast
 ```
 
-This combines business-driver effects with time-series residual correction.
+This combines business-driver modeling with time-series correction.
 
-### Step 5: Confidence intervals
-The notebook produces lower and upper 95% forecast bounds from the ARIMA forecast interval, added back onto the regression component.
+---
 
-### Step 6: Explainability
-The notebook produces:
+# Key Capabilities
 
-- ranked regression coefficients
-- permutation importance scores
-- per-period driver contribution breakdowns
+The notebook demonstrates:
 
-## Configuration
+- interpretable regression modeling
+- hybrid regression + ARIMA forecasting
+- time-series residual modeling
+- feature importance analysis
+- forecast explainability
+- generation of forecast confidence intervals
 
-The notebook includes the following configuration values:
+---
 
-```python
-DATA_PATH = "synthetic_monthly_sales.csv"
-TRAIN_RATIO = 0.80
-ARIMA_ORDER = (1, 0, 1)
-FORECAST_HORIZON = 6
-```
+# Libraries Used
 
-## Output Files
+The notebook uses common Python data science libraries:
 
-Running the notebook writes the following CSV outputs:
+- `from pathlib import Path`
+- `from sklearn.inspection import permutation_importance`
+- `from sklearn.linear_model import LinearRegression`
+- `from sklearn.metrics import mean_absolute_error, mean_squared_error`
+- `from sklearn.pipeline import Pipeline`
+- `from sklearn.preprocessing import StandardScaler`
+- `from statsmodels.tsa.arima.model import ARIMA`
+- `import json`
+- `import matplotlib.pyplot as plt`
+- `import numpy as np`
+- `import os`
+- `import pandas as pd`
+- `import statsmodels.api as sm`
 
-- `hybrid_forecast_output.csv`  
-  Holdout-period forecast results
+Typical core dependencies include:
 
-- `regression_coefficients_explainability.csv`  
-  OLS coefficients ranked for interpretation
+- pandas
+- numpy
+- statsmodels
+- scikit-learn
 
-- `permutation_importance_explainability.csv`  
-  Model-agnostic feature importance for the regression component
+---
 
-- `forecast_with_driver_contributions.csv`  
-  Holdout forecasts with per-driver contribution columns
+# Example Dataset
 
-- `future_forecast_with_explainability.csv`  
-  Forward forecast using the last known rows as stand-ins for future driver plans
+The notebook expects a **monthly sales dataset** with fields such as:
 
-## Python Libraries Used
+- date
+- sales
+- marketing_spend
+- avg_price
+- economic indicators
+- holiday flags
+- competitor signals
 
-- `numpy`
-- `pandas`
-- `statsmodels`
-- `scikit-learn`
+The dataset should be structured as a **time series with monthly observations**.
 
-## Repository Structure
+---
 
-```text
-.
-├── Client Sales Forecast.ipynb
-├── synthetic_monthly_sales.csv
-├── README.md
-```
+# Outputs
 
-## How to Run
+The notebook generates several useful outputs:
 
-### 1. Install dependencies
+- forecasted sales values
+- model coefficients
+- feature importance metrics
+- forecast confidence intervals
+- driver contribution breakdowns
+
+These outputs help both with **forecast accuracy** and **business interpretability**.
+
+---
+
+# How to Run
+
+## 1. Install dependencies
 
 ```bash
-pip install numpy pandas statsmodels scikit-learn
+pip install pandas numpy statsmodels scikit-learn matplotlib
 ```
 
-### 2. Place the input CSV in the same working directory
+## 2. Start Jupyter
 
-Required file:
-
-```text
-synthetic_monthly_sales.csv
+```bash
+jupyter notebook
 ```
 
-### 3. Run the notebook
+## 3. Open the notebook
 
-Open the notebook in Jupyter and execute the cells in order.
+```
+hybrid_sales_forecasting_notebook_executed.ipynb
+```
 
-## Notes and Assumptions
+Run the cells sequentially.
 
-- The notebook uses a simple chronological split based on `TRAIN_RATIO`
-- ARIMA order is fixed at `(1, 0, 1)` for demonstration
-- The future forecast section reuses the last observed rows as placeholders for future external drivers
-- In a real production setting, future values for marketing, pricing, macro indicators, holidays, and competitor activity should be provided explicitly
-- The `display()` function is referenced in the notebook output section and may need `from IPython.display import display` depending on your environment
+---
 
-## Use Cases
+# Use Cases
 
-This notebook is useful for:
+This forecasting approach is useful for:
 
 - sales forecasting
-- scenario planning
+- demand planning
 - marketing impact analysis
-- price sensitivity exploration
-- interpretable business forecasting prototypes
+- pricing analysis
+- scenario modeling
+- business driver analysis
 
-## Possible Improvements
+---
 
-Potential next steps for this project:
+# Possible Enhancements
 
-- tune ARIMA order using AIC or grid search
-- compare against SARIMAX, Prophet, XGBoost, or LightGBM
-- add backtesting across multiple rolling windows
-- add forecast plots and diagnostics
-- validate feature assumptions and multicollinearity
-- support future driver scenario simulation
+Future improvements could include:
 
-## License
+- SARIMAX modeling
+- automated ARIMA tuning
+- rolling backtests
+- cross‑validation
+- gradient boosting models (XGBoost / LightGBM)
+- scenario simulation for future marketing plans
+
+---
+
+# License
 
 This project is intended for educational and analytical use.
+
